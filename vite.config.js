@@ -1,4 +1,4 @@
-import { resolve } from 'path';
+import { resolve } from 'path'
 
 export default {
   // eslint-disable-next-line no-undef
@@ -15,8 +15,13 @@ export default {
   css: {
     preprocessorOptions: {
       scss: {
-        silenceDeprecations: ['import', 'mixed-decls', 'color-functions', 'global-builtin'],
+        silenceDeprecations: [
+          'import',
+          'mixed-decls',
+          'color-functions',
+          'global-builtin',
+        ],
       },
     },
   },
-};
+}
