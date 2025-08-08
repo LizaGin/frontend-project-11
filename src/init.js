@@ -21,14 +21,34 @@ const getErrorType = (e) => {
   return 'unknown'
 }
 
+const fetchNewPosts = (watchedState) => {
+  const promises = watchedState.feeds.map((feed) => {
+    return fetch(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(feed.url)}`)
+      .then(res => res.json())
+      .then((data) => {
+        const { posts: parsePosts, feed } = parse(data)
+
+        const newPosts = parsePosts.map(post => ({ ...post, feed: feed.url }))
+        const oldPosts = watchedState.posts.filter(post => post.feed === feed.url)
+
+        const posts = newPosts.filter(newPost => !oldPosts.some(oldPost => oldPost.title === newPost.title))
+        if (posts.length > 0) {
+          watchedState.posts.unshift(...posts)
+        }
+      })
+      .catch((e) => {
+        console.error(e)
+      })
+  })
+  Promise.all(promises).finally(() => {
+    setTimeout(() => fetchNewPosts(watchedState), 5000)
+  })
+}
+
 const loadRss = (url, watchedState) => {
   watchedState.app.status = 'loading'
 
-  return fetch(
-    `https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(
-      url,
-    )}`,
-  )
+  return fetch(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(url)}`)
     .then(res => res.json())
     .then((data) => {
       const { posts, feed } = parse(data)
@@ -137,5 +157,7 @@ export default () => {
         if (e.target.tagName === 'A') return
         watchedState.modal.postId = id
       })
+
+      fetchNewPosts(watchedState)
     })
 }
